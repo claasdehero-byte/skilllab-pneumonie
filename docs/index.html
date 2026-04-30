@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🫁 Pneumonie-Diagnostik SkillLab</title>
+  <style>
+    :root {
+      --blue:         #1565C0;
+      --blue-mid:     #1976D2;
+      --blue-light:   #E3F2FD;
+      --green:        #2E7D32;
+      --green-light:  #E8F5E9;
+      --orange:       #E65100;
+      --orange-light: #FFF3E0;
+      --purple:       #4527A0;
+      --purple-light: #EDE7F6;
+      --gray:         #546E7A;
+      --bg:           #EEF2F7;
+      --card:         #ffffff;
+      --text:         #1A237E;
+      --text-muted:   #546E7A;
+      --radius:       10px;
+      --shadow:       0 2px 12px rgba(0,0,0,0.12);
+      --tr:           all 0.22s ease;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── SCREENS ─────────────────────────────── */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ── SETUP ────────────────────────────────── */
+    #setup-screen.active {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px 16px;
+      text-align: center;
+    }
+
+    .setup-content {
+      width: 100%;
+      max-width: 540px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .setup-header-img {
+      width: 100%;
+      border-radius: var(--radius);
+      margin-bottom: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .setup-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--blue);
+      margin-bottom: 6px;
+    }
+
+    .setup-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    .scenario-box {
+      width: 100%;
+      background: var(--blue-light);
+      border-left: 4px solid var(--blue);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      text-align: left;
+      font-size: 13px;
+      line-height: 1.75;
+      color: #0D47A1;
+      margin-bottom: 22px;
+    }
+
+    .setup-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    #team-input {
+      padding: 12px 16px;
+      font-size: 15px;
+      border: 2px solid var(--blue);
+      border-radius: var(--radius);
+      width: 100%;
+      outline: none;
+      margin-bottom: 12px;
+      transition: var(--tr);
+    }
+    #team-input:focus { border-color: #0D47A1; box-shadow: 0 0 0 3px rgba(21,101,192,0.18); }
+    #team-input.error { border-color: var(--orange); }
+
+    #start-btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: var(--tr);
+    }
+    #start-btn:hover { background: #0D47A1; transform: translateY(-2px); box-shadow: 0 4px 16px rgba(21,101,192,0.3); }
+
+    /* ── GAME ─────────────────────────────────── */
+    #game-screen.active { display: block; padding: 10px; }
+
+    .game-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--card);
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .team-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .team-label strong { color: var(--blue); }
+
+    .progress-wrap { flex: 1; min-width: 140px; }
+    #progress-text { font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px; }
+    .progress-bar { height: 6px; background: #ECEFF1; border-radius: 3px; overflow: hidden; }
+    #progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--blue-mid), var(--green));
+      border-radius: 3px;
+      transition: width 0.45s ease;
+    }
+
+    .leave-btn {
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #ECEFF1;
+      border: 1px solid #B0BEC5;
+      border-radius: 7px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: var(--tr);
+    }
+    .leave-btn:hover { background: #CFD8DC; }
+
+    /* ── WIMMELBILD ───────────────────────────── */
+    .wimmel-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      line-height: 0;
+    }
+
+    #wimmelbild {
+      width: 100%;
+      height: auto;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    #hotspot-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Hotspot states */
+    .hotspot {
+      fill: transparent;
+      stroke: transparent;
+      cursor: pointer;
+      transition: fill 0.18s, stroke 0.18s;
+    }
+    .hotspot:hover {
+      fill: rgba(255,255,255,0.18);
+      stroke: rgba(255,255,255,0.7);
+      stroke-width: 3;
+      filter: drop-shadow(0 0 10px rgba(255,255,255,0.5));
+    }
+    .hotspot.answered { pointer-events: none; }
+    .hotspot.answered-correct  { fill: rgba(46,125,50,0.22); stroke: #2E7D32; stroke-width: 3; }
+    .hotspot.answered-incorrect { fill: rgba(46,125,50,0.22); stroke: #2E7D32; stroke-width: 3; }
+    .hotspot.answered-neutral  { fill: rgba(46,125,50,0.22); stroke: #2E7D32; stroke-width: 3; }
+
+    /* Debug mode: ?debug=1 makes all hotspots visible */
+    body.debug .hotspot.essentiell { stroke: #1565C0; stroke-width: 2.5; fill: rgba(21,101,192,0.18); }
+    body.debug .hotspot.sinnvoll   { stroke: #4527A0; stroke-width: 2.5; fill: rgba(69,39,160,0.18); }
+    body.debug .hotspot.ablenkung  { stroke: #E65100; stroke-width: 2.5; fill: rgba(230,81,0,0.15); }
+
+    /* ── MODAL ────────────────────────────────── */
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.52);
+      z-index: 100;
+    }
+    .backdrop.hidden { display: none; }
+
+    .modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 92%;
+      max-width: 480px;
+      z-index: 200;
+    }
+    .modal.hidden { display: none; }
+
+    .modal-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 8px 36px rgba(0,0,0,0.28);
+      animation: popUp 0.22s ease;
+    }
+    @keyframes popUp {
+      from { transform: translateY(14px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    .modal-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 11px 16px;
+      background: var(--blue-light);
+      border-bottom: 1px solid #BBDEFB;
+    }
+    .area-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--blue);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .modal-x {
+      background: none;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 3px 7px;
+      border-radius: 4px;
+      line-height: 1;
+    }
+    .modal-x:hover { background: #BBDEFB; }
+
+    .modal-card h3 {
+      padding: 16px 18px 4px;
+      font-size: 19px;
+      color: var(--blue);
+    }
+    .modal-card .desc {
+      padding: 4px 18px 18px;
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+
+    .modal-btns {
+      display: flex;
+      gap: 10px;
+      padding: 0 18px 18px;
+    }
+    .btn-ess, .btn-nicht {
+      flex: 1;
+      padding: 12px 8px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: var(--tr);
+    }
+    .btn-ess  { background: var(--green);  color: #fff; }
+    .btn-ess:hover  { background: #1B5E20; transform: translateY(-1px); }
+    .btn-nicht { background: var(--orange); color: #fff; }
+    .btn-nicht:hover { background: #BF360C; transform: translateY(-1px); }
+
+    /* ── FEEDBACK ─────────────────────────────── */
+    .feedback {
+      margin: 0 18px 18px;
+      padding: 13px 14px;
+      border-radius: 8px;
+      animation: fadeSlide 0.25s ease;
+    }
+    .feedback.hidden { display: none; }
+    .feedback.correct  { background: var(--green-light);  border-left: 4px solid var(--green); }
+    .feedback.incorrect { background: var(--orange-light); border-left: 4px solid var(--orange); }
+    .feedback.neutral  { background: var(--purple-light); border-left: 4px solid var(--purple); }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(5px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .fb-head { font-size: 14px; font-weight: 700; margin-bottom: 7px; }
+    .feedback.correct  .fb-head { color: var(--green); }
+    .feedback.incorrect .fb-head { color: var(--orange); }
+    .feedback.neutral  .fb-head { color: var(--purple); }
+
+    .fb-text { font-size: 12.5px; color: #333; line-height: 1.65; margin-bottom: 8px; }
+    .fb-source { font-size: 11px; color: var(--text-muted); font-style: italic; margin-bottom: 10px; }
+    .fb-source a { color: var(--blue-mid); font-style: normal; font-weight: 600; text-decoration: underline; }
+    .fb-source a:hover { color: var(--blue); }
+
+    .fb-next {
+      width: 100%;
+      padding: 9px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: var(--tr);
+    }
+    .fb-next:hover { background: #0D47A1; }
+
+    /* ── EVAL ─────────────────────────────────── */
+    #eval-screen.active {
+      display: block;
+      padding: 20px 16px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .eval-head { text-align: center; margin-bottom: 20px; }
+    .eval-head h2 { font-size: 24px; color: var(--blue); }
+    .eval-head p  { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+
+    .score-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+    }
+    .score-num { font-size: 52px; font-weight: 800; color: var(--blue); line-height: 1; }
+    .score-max { font-size: 18px; color: var(--text-muted); }
+    .score-pct { display: block; font-size: 14px; color: var(--text-muted); margin: 6px 0 14px; }
+    .score-bar-bg { height: 10px; background: #ECEFF1; border-radius: 5px; overflow: hidden; }
+    .score-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue-mid), var(--green));
+      border-radius: 5px;
+      transition: width 1s ease;
+    }
+
+    .summary {
+      background: var(--blue-light);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #0D47A1;
+      line-height: 1.9;
+      margin-bottom: 14px;
+    }
+
+    .table-wrap {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow-x: auto;
+      margin-bottom: 20px;
+    }
+    .res-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .res-table th {
+      background: var(--blue);
+      color: #fff;
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .res-table td { padding: 9px 12px; border-bottom: 1px solid #F0F4F8; vertical-align: middle; }
+    .res-table tr:last-child td { border-bottom: none; }
+    .res-table tr:hover td { background: var(--blue-light); }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .b-ess  { background: #BBDEFB; color: #0D47A1; }
+    .b-sin  { background: #EDE7F6; color: #4527A0; }
+    .b-abl  { background: #FFE0B2; color: #BF360C; }
+
+    .s-ok   { color: var(--green);  font-weight: 700; }
+    .s-err  { color: var(--orange); font-weight: 700; }
+    .s-neu  { color: var(--purple); font-weight: 600; }
+    .s-skip { color: var(--text-muted); }
+
+    .eval-btns {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-main {
+      padding: 12px 28px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--tr);
+    }
+    .btn-main:hover { background: #0D47A1; transform: translateY(-2px); }
+    .btn-out {
+      padding: 12px 28px;
+      background: var(--card);
+      color: var(--blue);
+      border: 2px solid var(--blue);
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--tr);
+    }
+    .btn-out:hover { background: var(--blue-light); }
+
+    .btn-vorgehen {
+      padding: 12px 28px;
+      background: #1B5E20;
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--tr);
+    }
+    .btn-vorgehen:hover { background: #2E7D32; transform: translateY(-2px); }
+
+    /* ── VORGEHEN MODAL ───────────────────────── */
+    .vorgehen-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 200;
+      display: flex; align-items: flex-start; justify-content: center;
+      padding: 20px 12px;
+      overflow-y: auto;
+    }
+    .vorgehen-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      max-width: 820px;
+      width: 100%;
+      padding: 0;
+      position: relative;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+      margin: auto;
+    }
+    .vorgehen-header {
+      display: flex; gap: 16px; align-items: flex-start;
+      padding: 28px 28px 20px;
+      background: linear-gradient(135deg, #1B5E20, #2E7D32);
+      border-radius: var(--radius) var(--radius) 0 0;
+      color: #fff;
+    }
+    .vorgehen-title-icon { font-size: 40px; flex-shrink: 0; }
+    .vorgehen-header h2 { margin: 0 0 6px; font-size: 20px; color: #fff; }
+    .vorgehen-subtitle { margin: 0; font-size: 12px; opacity: 0.85; line-height: 1.5; }
+    .vorgehen-close {
+      position: absolute; top: 14px; right: 14px;
+      background: rgba(255,255,255,0.2); border: none; border-radius: 50%;
+      width: 32px; height: 32px; font-size: 16px; cursor: pointer; color: #fff;
+    }
+    .vorgehen-steps { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+    .vorgehen-step {
+      display: flex; gap: 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    .vorgehen-step.vstep-critical {
+      border-color: #c53030;
+      background: #fff5f5;
+    }
+    .vstep-num {
+      flex-shrink: 0;
+      width: 36px; height: 36px;
+      background: #1B5E20; color: #fff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 16px;
+    }
+    .vstep-critical .vstep-num { background: #c53030; }
+    .vstep-content { flex: 1; min-width: 0; }
+    .vstep-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .vstep-content ul { margin: 0 0 8px; padding-left: 18px; }
+    .vstep-content li { font-size: 13px; margin-bottom: 4px; line-height: 1.5; color: var(--text); }
+    .vstep-content ul ul { margin: 4px 0; }
+    .vstep-hint {
+      font-size: 12px; padding: 8px 12px;
+      background: #fff8e1; border-left: 3px solid #f59e0b;
+      border-radius: 4px; margin-top: 8px; color: #78350f;
+    }
+    .vstep-hint-red {
+      background: #fff5f5; border-left-color: #c53030; color: #c53030;
+    }
+    .vstep-source {
+      font-size: 11px; color: var(--text-muted); font-style: italic; margin-top: 8px;
+    }
+    .vstep-score-table {
+      border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
+      margin: 8px 0; font-size: 12px;
+    }
+    .score-row {
+      display: grid; grid-template-columns: 1fr 2fr 60px;
+      padding: 7px 10px; border-bottom: 1px solid var(--border);
+      gap: 8px; align-items: center;
+    }
+    .score-row:last-child { border-bottom: none; }
+    .score-header { background: #1B5E20; color: #fff; font-weight: 700; }
+    .score-row span:last-child { text-align: center; font-weight: 700; }
+    .vstep-score-result { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+    .score-class { padding: 7px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+    .score-0 { background: #f0fdf4; color: #15803d; border: 1px solid #86efac; }
+    .score-1 { background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; }
+    .score-3 { background: #fff5f5; color: #c53030; border: 1px solid #fca5a5; }
+    .vorgehen-summary {
+      margin: 0 24px 20px;
+      background: #e8f5e9;
+      border-left: 4px solid #2E7D32;
+      padding: 14px 16px;
+      border-radius: 0 6px 6px 0;
+      font-size: 13px;
+      color: #1B5E20;
+      line-height: 1.6;
+    }
+    .vorgehen-footer {
+      padding: 16px 24px 24px;
+      text-align: center;
+    }
+    .btn-vorgehen-close {
+      padding: 12px 48px;
+      background: #1B5E20; color: #fff;
+      border: none; border-radius: var(--radius);
+      font-size: 15px; font-weight: 700; cursor: pointer;
+    }
+    .btn-vorgehen-close:hover { background: #2E7D32; }
+
+    /* ── IMPRESSUM ────────────────────────────── */
+    .imp-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .imp-overlay.hidden { display: none; }
+    .vorgehen-overlay.hidden { display: none; }
+
+    .imp-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 26px;
+      max-width: 540px;
+      width: 100%;
+      max-height: 82vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 48px rgba(0,0,0,0.32);
+    }
+    .imp-card h2 { color: var(--blue); font-size: 18px; margin-bottom: 14px; }
+    .imp-card h3 { font-size: 14px; color: var(--text); margin: 14px 0 7px; }
+    .imp-card p  { font-size: 13px; color: var(--text-muted); line-height: 1.7; margin-bottom: 8px; }
+    .imp-card ul { padding-left: 18px; font-size: 13px; color: var(--text-muted); line-height: 1.7; }
+    .imp-card hr { border: none; border-top: 1px solid #E0E0E0; margin: 14px 0; }
+
+    /* ── RESPONSIVE ───────────────────────────── */
+    @media (max-width: 600px) {
+      .game-header { gap: 8px; }
+      .modal { width: 96%; }
+      .modal-btns { flex-direction: column; }
+      #eval-screen.active { padding: 12px 10px; }
+      .eval-btns { flex-direction: column; }
+      .btn-main, .btn-out, .btn-vorgehen { width: 100%; }
+      .vorgehen-header { flex-direction: column; }
+      .score-row { grid-template-columns: 1fr 1fr 40px; font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════ SCREEN 1: SETUP ════════════════════════ -->
+<div id="setup-screen" class="screen active">
+  <div class="setup-content">
+    <img src="Titelbild.jpg" class="setup-header-img" alt="Pneumonie SkillLab"
+         onerror="this.style.display='none'">
+    <h1 class="setup-title">🫁 Pneumonie-Diagnostik SkillLab</h1>
+    <p class="setup-subtitle">Charité Berlin · Ausbildungsstation</p>
+
+    <div class="scenario-box">
+      <strong>📋 Szenario – Hr. Hermann, 67 J.</strong><br>
+      Tag 4 nach Symptombeginn · Fieber 38,8 °C · produktiver Husten (grünliches Sputum) · Dyspnoe<br>
+      Ambulante Therapie mit Amoxicillin-Clavulansäure → <strong>keine Besserung</strong><br>
+      Jetzt stationäre Aufnahme · Verdacht auf <strong>CAP (Community-acquired Pneumonia)</strong>
+    </div>
+
+    <p class="setup-label">Welche Instrumente brauchst du für die Diagnose?</p>
+    <input type="text" id="team-input" placeholder="Team-Name eingeben …" maxlength="30"
+           autocomplete="off" onkeydown="if(event.key==='Enter') startGame()">
+    <button id="start-btn" onclick="startGame()">▶️ Lab betreten</button>
+  </div>
+</div>
+
+<!-- ════ SCREEN 2: GAME ═════════════════════════ -->
+<div id="game-screen" class="screen">
+  <div class="game-header">
+    <div class="team-label">Team: <strong id="team-display">—</strong></div>
+    <div class="progress-wrap">
+      <span id="progress-text">0 / 25 bewertet</span>
+      <div class="progress-bar"><div id="progress-fill"></div></div>
+    </div>
+    <button class="leave-btn" onclick="leaveRoom()">🚪 Zimmer verlassen</button>
+  </div>
+
+  <div class="wimmel-wrap">
+    <img src="Diagnostik_Pneumonie.png" id="wimmelbild" alt="Diagnostik-Zimmer"
+         draggable="false" onerror="this.alt='[Bild nicht gefunden – Diagnostik_Pneumonie.png im gleichen Ordner?]'">
+
+    <!-- SVG Hotspot-Overlay — viewBox passt proportional zu 1200×896 (beide ~4:3) -->
+    <svg id="hotspot-svg" viewBox="0 0 2560 1920" preserveAspectRatio="none"
+         xmlns="http://www.w3.org/2000/svg">
+      <!-- ESSENTIELL (8) — img(x,y)→svg: x×2.133, y×2.143 -->
+      <circle class="hotspot essentiell" data-id="01" cx="629"  cy="875"  r="80"/>  <!-- Stethoskop: Arzt (mehr rechts) -->
+      <circle class="hotspot essentiell" data-id="02" cx="149"  cy="1061" r="70"/>  <!-- Blutdruckmanschette: Wagen Mitte -->
+      <circle class="hotspot essentiell" data-id="03" cx="203"  cy="1061" r="55"/>  <!-- Thermometer: neben Blutdruck -->
+      <circle class="hotspot essentiell" data-id="04" cx="102"  cy="740"  r="85"/>  <!-- Atemfrequenz-Monitor: linke Wand -->
+      <circle class="hotspot essentiell" data-id="05" cx="661"  cy="1261" r="65"/>  <!-- Pulsoxymeter: Tisch (Clip-Gerät) -->
+      <circle class="hotspot essentiell" data-id="06" cx="491"  cy="1003" r="95"/>  <!-- Auskultation: Patient Brust -->
+      <circle class="hotspot essentiell" data-id="07" cx="1642" cy="343"  r="110"/> <!-- Röntgen-Thorax: Rückwand-Screen -->
+      <circle class="hotspot essentiell" data-id="08" cx="917"  cy="632"  r="75"/>  <!-- Blutkultur: IV-Beutel -->
+      <!-- SINNVOLL (6) — alle Tisch-Items +107 SVG (≈+50px im Bild) nach rechts -->
+      <circle class="hotspot sinnvoll"   data-id="09" cx="1568" cy="1222" r="55"/>  <!-- Blutbild EDTA: Tisch -->
+      <circle class="hotspot sinnvoll"   data-id="10" cx="1835" cy="1168" r="60"/>  <!-- CRP: Tisch rechts -->
+      <circle class="hotspot sinnvoll"   data-id="11" cx="1920" cy="1168" r="60"/>  <!-- PCT: neben CRP -->
+      <circle class="hotspot sinnvoll"   data-id="12" cx="1995" cy="1161" r="60"/>  <!-- BGA: neben PCT -->
+      <circle class="hotspot sinnvoll"   data-id="13" cx="1654" cy="1243" r="55"/>  <!-- Sputum-Becher: Tisch -->
+      <circle class="hotspot sinnvoll"   data-id="14" cx="1728" cy="1239" r="55"/>  <!-- Urin-Antigen: Tisch -->
+      <!-- ABLENKUNG (11) -->
+      <circle class="hotspot ablenkung"  data-id="15" cx="2133" cy="622"  r="120"/> <!-- CT-Scanner: rechts Hintergrund -->
+      <circle class="hotspot ablenkung"  data-id="16" cx="1002" cy="1175" r="65"/>  <!-- Spirometer: Tisch (links) -->
+      <circle class="hotspot ablenkung"  data-id="17" cx="1175" cy="1200" r="50"/>  <!-- Perkussionshammer: Tisch -->
+      <circle class="hotspot ablenkung"  data-id="18" cx="2090" cy="1011" r="95"/>  <!-- EKG-Gerät: links vom Echo -->
+      <circle class="hotspot ablenkung"  data-id="19" cx="2250" cy="911"  r="80"/>  <!-- TTE-Echo: rechts Mitte -->
+      <circle class="hotspot ablenkung"  data-id="20" cx="2314" cy="836"  r="65"/>  <!-- TEE: Monitor oben rechts -->
+      <circle class="hotspot ablenkung"  data-id="21" cx="1835" cy="1275" r="55"/>  <!-- Hautabstrich: unter CRP -->
+      <circle class="hotspot ablenkung"  data-id="22" cx="1419" cy="1204" r="50"/>  <!-- Stuhlprobe: Tisch -->
+      <circle class="hotspot ablenkung"  data-id="23" cx="2272" cy="386"  r="125"/> <!-- MRT: oben rechts -->
+      <circle class="hotspot ablenkung"  data-id="24" cx="1297" cy="1078" r="65"/>  <!-- Tee+Tasse: Tisch -->
+      <circle class="hotspot ablenkung"  data-id="25" cx="1562" cy="947"  r="85"/>  <!-- Tempo-Taschentücher: Tisch -->
+    </svg>
+  </div>
+</div>
+
+<!-- ════ MODAL ══════════════════════════════════ -->
+<div id="backdrop" class="backdrop hidden" onclick="closeModal()"></div>
+<div id="modal" class="modal hidden">
+  <div class="modal-card">
+    <div class="modal-top">
+      <span id="m-area" class="area-tag"></span>
+      <button class="modal-x" onclick="closeModal()">✕</button>
+    </div>
+    <h3 id="m-name"></h3>
+    <p id="m-desc" class="desc"></p>
+    <div id="m-btns" class="modal-btns">
+      <button class="btn-ess"  onclick="submitAnswer('ESSENTIELL')">✅ ESSENTIELL</button>
+      <button class="btn-nicht" onclick="submitAnswer('NICHT_ESSENTIELL')">✗ NICHT ESSENTIELL</button>
+    </div>
+    <div id="feedback" class="feedback hidden">
+      <div id="fb-head" class="fb-head"></div>
+      <div id="fb-text" class="fb-text"></div>
+      <div id="fb-src"  class="fb-source"></div>
+      <button class="fb-next" onclick="closeModal()">Weiter →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ SCREEN 3: EVALUATION ══════════════════ -->
+<div id="eval-screen" class="screen">
+  <div class="eval-head">
+    <h2>📊 Auswertung</h2>
+    <p>Team: <strong id="eval-team">—</strong></p>
+  </div>
+
+  <div class="score-card">
+    <div>
+      <span id="score-val" class="score-num">0</span>
+      <span class="score-max"> / 190 Punkte</span>
+    </div>
+    <span id="score-pct" class="score-pct"></span>
+    <div class="score-bar-bg">
+      <div id="score-bar" class="score-bar-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div id="summary" class="summary"></div>
+
+  <div class="table-wrap">
+    <table class="res-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Instrument</th>
+          <th>Kategorie</th>
+          <th>Deine Antwort</th>
+          <th>Ergebnis</th>
+        </tr>
+      </thead>
+      <tbody id="res-body"></tbody>
+    </table>
+  </div>
+
+  <div class="eval-btns">
+    <button class="btn-main" onclick="resetGame()">🔄 Wiederholen</button>
+    <button class="btn-vorgehen" onclick="showVorgehen()">📋 Richtiges Vorgehen A–Z</button>
+    <button class="btn-out"  onclick="showImp()">📄 Impressum</button>
+  </div>
+</div>
+
+<!-- ════ VORGEHEN A–Z ════════════════════════════ -->
+<div id="vorgehen-overlay" class="vorgehen-overlay hidden" onclick="closeVorgehen(event)">
+  <div class="vorgehen-card">
+    <button class="vorgehen-close" onclick="closeVorgehenBtn()">✕</button>
+    <div class="vorgehen-header">
+      <div class="vorgehen-title-icon">🩺</div>
+      <div>
+        <h2>Richtiges diagnostisches Vorgehen</h2>
+        <p class="vorgehen-subtitle">Aufnahme eines Patienten mit Verdacht auf CAP (Community-acquired Pneumonia)<br>
+        <em>nach S3-Leitlinie CAP (AWMF 020-020) · Ewig, S. (2016). Ambulant erworbene Pneumonie. Springer.</em></p>
+      </div>
+    </div>
+
+    <div class="vorgehen-steps">
+
+      <div class="vorgehen-step">
+        <div class="vstep-num">1</div>
+        <div class="vstep-content">
+          <div class="vstep-title">📋 Anamnese</div>
+          <ul>
+            <li><strong>Symptom-Beginn:</strong> Seit wann? Verlauf? (akut/subakut)</li>
+            <li><strong>Leitsymptome:</strong> Husten, Auswurf (Farbe, Menge), Dyspnoe, Fieber, Thoraxschmerz</li>
+            <li><strong>Vorerkrankungen:</strong> COPD, Herzinsuffizienz, Diabetes, Immunsuppression</li>
+            <li><strong>Medikation:</strong> Bereits Antibiotika eingenommen? (Therapieversagen prüfen)</li>
+            <li><strong>Sozialanamnese:</strong> Pflegebedürftigkeit, Reisen, Tierkontakt, Beruf</li>
+          </ul>
+          <div class="vstep-hint">💡 Bei Hr. Hermann: Symptombeginn vor 4 Tagen, Amo-Clav-Therapie ohne Besserung → Therapieversagen!</div>
+        </div>
+      </div>
+
+      <div class="vorgehen-step">
+        <div class="vstep-num">2</div>
+        <div class="vstep-content">
+          <div class="vstep-title">🔬 Klinische Untersuchung</div>
+          <ul>
+            <li><strong>Vitalzeichen (ALLE obligat):</strong>
+              <ul>
+                <li>Atemfrequenz (AF) – stärkster Einzelprädiktor für Schweregrad</li>
+                <li>Blutdruck systolisch / diastolisch</li>
+                <li>Herzfrequenz (Tachykardie &gt;90/min = SIRS-Zeichen)</li>
+                <li>Körpertemperatur (Fieber &gt;38 °C oder Hypothermie &lt;36 °C)</li>
+                <li>Sauerstoffsättigung SpO₂ (Pulsoxymeter)</li>
+              </ul>
+            </li>
+            <li><strong>Auskultation Lunge:</strong> Krepitationen, Bronchialatmen, abgeschwächtes Atemgeräusch</li>
+            <li><strong>Perkussion:</strong> Dämpfung über konsolidierten Arealen</li>
+            <li><strong>Allgemeinzustand:</strong> Bewusstsein, Orientierung (Konfusion = Alarmsymptom)</li>
+          </ul>
+          <div class="vstep-source">Ewig 2016, Kap. 7 · S3-Leitlinie CAP: Vitalzeichen-Messung ist obligater Bestandteil jeder Erstuntersuchung</div>
+        </div>
+      </div>
+
+      <div class="vorgehen-step">
+        <div class="vstep-num">3</div>
+        <div class="vstep-content">
+          <div class="vstep-title">📊 Schweregrad-Score: CRB-65</div>
+          <div class="vstep-score-table">
+            <div class="score-row score-header">
+              <span>Parameter</span><span>Kriterium</span><span>Punkte</span>
+            </div>
+            <div class="score-row">
+              <span><strong>C</strong>onfusion</span><span>Neue Bewusstseinsstörung</span><span>1</span>
+            </div>
+            <div class="score-row">
+              <span><strong>R</strong>espiratory Rate</span><span>Atemfrequenz ≥30/min</span><span>1</span>
+            </div>
+            <div class="score-row">
+              <span><strong>B</strong>lood pressure</span><span>RR systolisch &lt;90 mmHg oder diastolisch ≤60 mmHg</span><span>1</span>
+            </div>
+            <div class="score-row">
+              <span>Age <strong>65</strong></span><span>Alter ≥65 Jahre</span><span>1</span>
+            </div>
+          </div>
+          <div class="vstep-score-result">
+            <div class="score-class score-0">CRB-65 = 0 → Ambulant behandelbar · 30-Tages-Letalität &lt;1%</div>
+            <div class="score-class score-1">CRB-65 = 1–2 → Stationäre Aufnahme erwägen · Letalität 8–9%</div>
+            <div class="score-class score-3">CRB-65 = 3–4 → Stationäre Aufnahme, ggf. Intensivstation · Letalität 17–57%</div>
+          </div>
+          <div class="vstep-source">Ewig 2016, Kap. 11 · S3-Leitlinie CAP: CRB-65 ist validiertes Instrument zur Einschätzung des Behandlungsorts</div>
+        </div>
+      </div>
+
+      <div class="vorgehen-step">
+        <div class="vstep-num">4</div>
+        <div class="vstep-content">
+          <div class="vstep-title">📷 Bildgebung – Röntgen-Thorax</div>
+          <ul>
+            <li><strong>Indikation:</strong> Immer bei Pneumonie-Verdacht – Goldstandard zur Diagnosebestätigung</li>
+            <li><strong>Zwei Ebenen:</strong> PA (postero-anterior) + Lateral</li>
+            <li><strong>Befunde:</strong> Infiltrat, Verschattung, Erguss, Konsolidierung, Kaverne</li>
+            <li><strong>CT-Thorax:</strong> NICHT zur Erstdiagnose – nur bei Therapieversagen nach 7 Tagen oder Verdacht auf Komplikation (Abszess, Empyem)</li>
+            <li><strong>Sonographie:</strong> Alternative wenn kein Röntgen verfügbar; gut für Pleuraerguss-Nachweis</li>
+          </ul>
+          <div class="vstep-source">Ewig 2016, Kap. 8 (Bollow) · S3-Leitlinie CAP (Evidenzlevel A): Röntgen-Thorax obligat</div>
+        </div>
+      </div>
+
+      <div class="vorgehen-step">
+        <div class="vstep-num">5</div>
+        <div class="vstep-content">
+          <div class="vstep-title">🧪 Labordiagnostik</div>
+          <ul>
+            <li><strong>Blutbild:</strong> Leukozytose (&gt;11.000/µl) oder Leukopenie (&lt;4.000 = schlechtere Prognose) · Thrombozyten</li>
+            <li><strong>CRP:</strong> Entzündungsmarker, erwartet deutlich erhöht (&gt;50 mg/l) · Verlaufsparameter</li>
+            <li><strong>Procalcitonin (PCT):</strong> Differenzierung bakteriell/viral; &gt;0,5 ng/ml = bakterielle Genese wahrscheinlich; Hilfe bei Antibiose-Dauer</li>
+            <li><strong>Blutgasanalyse (BGA):</strong> Bei Dyspnoe oder SpO₂ &lt;94% obligat · PaO₂, pH, HCO₃⁻</li>
+            <li><strong>Nierenwerte:</strong> Kreatinin, Harnstoff (CURB-65!), Elektrolyte</li>
+            <li><strong>Gerinnung:</strong> Quick/INR, D-Dimere bei Sepsis-Verdacht</li>
+            <li><strong>Laktat:</strong> Bei Sepsis-Verdacht · &gt;2 mmol/l = erhöhtes Risiko</li>
+          </ul>
+          <div class="vstep-source">Ewig 2016, Kap. 9 · S3-Leitlinie CAP: Labordiagnostik bei allen hospitalisierten Patienten (Evidenzlevel A)</div>
+        </div>
+      </div>
+
+      <div class="vorgehen-step vstep-critical">
+        <div class="vstep-num">6</div>
+        <div class="vstep-content">
+          <div class="vstep-title">🦠 Mikrobiologische Diagnostik – VOR Antibiose!</div>
+          <ul>
+            <li><strong>⚠️ Blutkulturen (2×):</strong> Mindestens 2 Paar aus verschiedenen Venenpunkten – IMMER VOR erster Antibiose-Gabe!
+              <ul>
+                <li>Hautdesinfektion 30 Sek. einwirken lassen</li>
+                <li>Je 10 ml Blut pro Flasche (aerob + anaerob)</li>
+                <li>Zeitabstand beider Entnahmen: möglichst kurz (bis 30 min)</li>
+              </ul>
+            </li>
+            <li><strong>Sputum-Kultur + E+R:</strong> Bei produktivem Husten (>25 Granulozyten/GF) – bei Therapieversagen obligat</li>
+            <li><strong>Legionellen-Antigentest (Urin):</strong> Bei schwerer CAP oder atypischer Symptomatik – positiv = sofort Therapieanpassung (Fluorchinolone statt β-Laktame)</li>
+            <li><strong>Pneumokokken-Antigentest (Urin):</strong> Bei hospitalisierten CAP-Patienten empfohlen</li>
+          </ul>
+          <div class="vstep-hint vstep-hint-red">🚨 CRITICAL: Blutkulturen VOR Antibiotika! Jede Stunde Verzögerung senkt die Trefferquote um ~10%.</div>
+          <div class="vstep-source">Ewig 2016, Kap. 12 (Ewig & Gatermann) · S3-Leitlinie CAP (Evidenzlevel A): Blutkulturen obligat bei stationärer CAP</div>
+        </div>
+      </div>
+
+      <div class="vorgehen-step">
+        <div class="vstep-num">7</div>
+        <div class="vstep-content">
+          <div class="vstep-title">💊 Antimikrobielle Therapie</div>
+          <ul>
+            <li><strong>Zeitfenster:</strong> Beginn innerhalb von 4 Stunden nach Diagnosestellung</li>
+            <li><strong>Kalkulierte Therapie:</strong> Initial nach Wahrscheinlichkeit (S. pneumoniae häufigster Erreger bei CAP)</li>
+            <li><strong>Stationär, nicht schwer (CRB-65 1–2):</strong> Aminopenicillin + Betalaktamaseinhibitor (z.B. Amoxicillin/Clavulansäure) <em>oder</em> Cephalosporin Gr. 3 ± Makrolid</li>
+            <li><strong>Bei Therapieversagen</strong> (wie Hr. Hermann mit Amo-Clav): Erreger-Identifikation + Resistenztestung abwarten → Therapie eskalieren/wechseln</li>
+            <li><strong>Legionellose bestätigt:</strong> Fluorchinolon (Levofloxacin) oder Makrolid – β-Laktame sind unwirksam!</li>
+            <li><strong>Therapiedauer:</strong> In der Regel 5–7 Tage bei unkomplizierter CAP</li>
+          </ul>
+          <div class="vstep-source">Ewig 2016, Kap. 13–14 (Ewig & Gatermann) · S3-Leitlinie CAP: Frühzeitige Antibiose senkt Mortalität (Evidenzlevel A)</div>
+        </div>
+      </div>
+
+      <div class="vorgehen-step">
+        <div class="vstep-num">8</div>
+        <div class="vstep-content">
+          <div class="vstep-title">🔄 Verlaufskontrolle & Deeskalation</div>
+          <ul>
+            <li><strong>Klinische Verlaufskontrolle:</strong> Vitalzeichen 2×/Tag, SpO₂ kontinuierlich</li>
+            <li><strong>Laborkontrollen:</strong> CRP und Blutbild nach 48–72 h – kein Ansprechen? → Therapieversagen prüfen</li>
+            <li><strong>Röntgen-Kontrolle:</strong> Nicht vor 6 Wochen – radiologische Heilung verzögert sich gegenüber klinischer Besserung</li>
+            <li><strong>Entlassungskriterien:</strong> SpO₂ &gt;90%, AF &lt;24/min, RR stabil, kein Fieber ≥48h, Oraltherapie möglich</li>
+            <li><strong>PCT-gesteuerte Deeskalation:</strong> Abfall &gt;80% vom Ausgangswert = Therapieende erwägen</li>
+          </ul>
+          <div class="vstep-source">Ewig 2016, Kap. 14 · S3-Leitlinie CAP: Deeskalation nach Erregernachweis und klinischer Stabilisierung</div>
+        </div>
+      </div>
+
+    </div><!-- /vorgehen-steps -->
+
+    <div class="vorgehen-summary">
+      <strong>Merksatz (S3-Leitlinie CAP):</strong>
+      „Die Qualität der CAP-Versorgung hängt maßgeblich von der konsequenten Umsetzung der Basisdiagnostik ab –
+      insbesondere von der Blutkultur-Entnahme vor Antibiose, dem Röntgen-Thorax als Goldstandard und der frühen
+      Schweregradeinstufung mittels CRB-65." (Ewig 2016, S. 127)
+    </div>
+
+    <div class="vorgehen-footer">
+      <button class="btn-vorgehen-close" onclick="closeVorgehenBtn()">Schließen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ IMPRESSUM ══════════════════════════════ -->
+<div id="imp-overlay" class="imp-overlay hidden">
+  <div class="imp-card">
+    <h2>Impressum, Credits & Urheberrechte</h2>
+    <div>
+      <h3>Impressum</h3>
+      <p><strong>Angaben gemäß § 5 TMG:</strong><br>
+         Claus Clemens<br>Kirchhofstr. 1<br>13585 Berlin</p>
+      <p><strong>Kontakt:</strong><br>E-Mail: claus.clemens@charite.de</p>
+      <p><strong>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV:</strong><br>
+         Claus Clemens<br>Kirchhofstr. 1<br>13585 Berlin</p>
+      <hr>
+      <h3>Credits & Urheberrecht</h3>
+      <p><strong>Idee, Konzept und Umsetzung:</strong><br>Claus Clemens</p>
+      <p><strong>Technische Unterstützung & KI-Tools:</strong><br>
+         Dieses Projekt wurde unter Zuhilfenahme von Künstlicher Intelligenz erstellt,
+         um das Lernerlebnis zu optimieren:</p>
+      <ul>
+        <li><strong>Texte, Spielmechanik & Logik:</strong> Google Gemini, Claude Code (Anthropic)</li>
+        <li><strong>Grafiken & Bildmaterial:</strong> Google Bildgenerierungsmodell</li>
+      </ul>
+      <p><strong>Urheberrechtshinweis:</strong><br>
+         Alle Konzepte, die didaktische Struktur des Pneumonie-SkillLabs sowie die
+         spezifischen medizinischen Inhalte wurden von Claus Clemens konzipiert und
+         implementiert.</p>
+      <hr>
+      <h3>Haftungsausschluss</h3>
+      <p>„Dieses Spiel dient ausschließlich zu Schulungszwecken und ersetzt keine
+         medizinische Ausbildung oder professionelle Leitlinien. Für die Richtigkeit
+         der Darstellungen im realen klinischen Alltag wird keine Haftung übernommen."</p>
+    </div>
+    <button class="btn-main" style="width:100%;margin-top:20px" onclick="hideImp()">
+      Gelesen &amp; Schließen
+    </button>
+  </div>
+</div>
+
+<script>
+// ── DEBUG MODE ────────────────────────────────────────────────────────────────
+const DEBUG = new URLSearchParams(window.location.search).has('debug');
+if (DEBUG) document.body.classList.add('debug');
+
+// ── INSTRUMENTS DATABASE ──────────────────────────────────────────────────────
+const INSTRUMENTS = [
+  {id:"01",name:"Stethoskop",cat:"ESSENTIELL",area:"Bett/Patient",
+   desc:"Das Stethoskop überträgt Körperschall auf das Ohr des Untersuchers und wird in der klinischen Untersuchung eingesetzt, um Herz-, Lungen- und Darmgeräusche zu beurteilen. Es ermöglicht die akustische Wahrnehmung von Strömungsgeräuschen, Reibungslauten oder Stille in Körperhöhlen.",
+   ok:"✓ RICHTIG! Das Stethoskop ist essentiell. Feinknisternde Krepitationen sind ein klassisches Zeichen einer Pneumonie. Auskultation ist ein fundamentales klinisches Untersuchungsinstrument.",
+   err:"✗ Das sollte ESSENTIELL sein. Das Stethoskop ist eines der wichtigsten Instrumente zur Diagnose einer Pneumonie. Krepitationen auf Auskultation sind pathognomonisch.",
+   src:"S3-Leitlinie CAP – Klinische Untersuchung",ev:"A",
+   url:"https://www.awmf.org/leitlinien/detail/ll/020-020.html"},
+
+  {id:"02",name:"Blutdruckmanschette",cat:"ESSENTIELL",area:"Nachttisch/Tisch",
+   desc:"Die Blutdruckmanschette misst den arteriellen Blutdruck durch kurzzeitigen Verschluss und kontrollierten Druckabbau an einer Extremität. Sie ist fester Bestandteil der Vitalzeichenerhebung und gibt Auskunft über die Durchblutungssituation und den Kreislaufstatus.",
+   ok:"✓ RICHTIG! Blutdruck ist essentiell. Abnormale RR-Werte gehören zu den SIRS-Kriterien und zeigen die hämodynamische Belastung bei schwerer CAP.",
+   err:"✗ Das sollte ESSENTIELL sein. RR ist ein SIRS-Kriterium und wichtig zur Einschätzung der Schwere und Stabilität des Patienten.",
+   src:"DNQP-Expertenstandard: Pneumonieprophylaxe",ev:"A",
+   url:"https://www.dnqp.de/expertenstandards-und-auditinstrumente/"},
+
+  {id:"03",name:"Thermometer",cat:"ESSENTIELL",area:"Nachttisch/Tisch",
+   desc:"Das Thermometer misst die Körpertemperatur und ist eines der grundlegendsten diagnostischen Hilfsmittel in der Medizin. Abweichungen vom Normbereich können auf Infektionen, Entzündungen, Stoffwechselstörungen oder regulatorische Dysfunktionen hinweisen.",
+   ok:"✓ RICHTIG! Temperaturmessung ist essentiell. Hr. Hermann hat febrile Temperaturen >38,5 °C, was ein SIRS-Kriterium ist und Infektionszeichen dokumentiert.",
+   err:"✗ Das sollte ESSENTIELL sein. Febrile Temperaturen sind ein Kernzeichen einer Pneumonie und SIRS-Kriterium.",
+   src:"SIRS-Kriterien · RKI",ev:"A",
+   url:"https://www.rki.de/DE/Themen/Infektionskrankheiten/Infektionskrankheiten-A-Z/P/Pneumokokkeninfektion/pneumokokken-node.html"},
+
+  {id:"04",name:"Atemfrequenz-Monitor",cat:"ESSENTIELL",area:"Wand (Monitor)",
+   desc:"Der Atemfrequenz-Monitor erfasst die Anzahl der Atemzüge pro Minute und ermöglicht eine kontinuierliche Überwachung der Atemtätigkeit. Er wird eingesetzt, um Abweichungen wie Tachypnoe oder Bradypnoe frühzeitig zu erkennen und den Verlauf bei Patienten mit respiratorischen Beschwerden zu dokumentieren.",
+   ok:"✓ RICHTIG! Die Atemfrequenz ist essentiell. Hr. Hermann ist tachypnoisch (>20/min), was der stärkste Prädiktor für CAP-Schwere ist.",
+   err:"✗ Das sollte ESSENTIELL sein. Tachypnoe ist ein SIRS-Kriterium und zeigt respiratorische Belastung.",
+   src:"S3-Leitlinie CAP: CURB-65 Score (Respiratory Rate als wichtigste Komponente)",ev:"A",
+   url:"https://www.awmf.org/leitlinien/detail/ll/020-020.html"},
+
+  {id:"05",name:"Pulsoxymeter",cat:"ESSENTIELL",area:"Tisch",
+   desc:"Das Pulsoxymeter misst nicht-invasiv die periphere Sauerstoffsättigung des Blutes, indem es die Lichtabsorption von oxygeniertem und desaturiertem Hämoglobin in der Kapillardurchblutung vergleicht. Es liefert gleichzeitig die Pulsfrequenz und findet Einsatz in der Notfallmedizin, Intensivpflege und Routineüberwachung.",
+   ok:"✓ RICHTIG! SpO₂-Messung ist essentiell. Hr. Hermann mit Dyspnoe benötigt SpO₂-Monitoring. Erniedrigung zeigt Hypoxämie und Notwendigkeit von O₂-Therapie.",
+   err:"✗ Das sollte ESSENTIELL sein. SpO₂ ist ein Basis-Vitalzeichen und zeigt die Oxygenierung an.",
+   src:"S3-Leitlinie CAP: Oxygenierung ist prognostischer Faktor",ev:"A",
+   url:"https://www.awmf.org/leitlinien/detail/ll/020-020.html"},
+
+  {id:"06",name:"Auskultation (Lunge)",cat:"ESSENTIELL",area:"Patient (Bett)",
+   desc:"Bei der Lungenuntersuchung werden verschiedene Techniken der klinischen Untersuchung – Inspektion, Palpation, Perkussion und Auskultation – kombiniert, um Belüftung, Schallfortleitung und Atemgeräusche zu beurteilen. Sie dient der Erfassung pathologischer Befunde im Thoraxbereich ohne apparativen Aufwand.",
+   ok:"✓ RICHTIG! Auskultation ist essentiell. Feinknisternde Krepitationen sind klassisch für alveolares Infiltrat. Zusammen mit Fieber und Husten pathognomonisch.",
+   err:"✗ Das sollte ESSENTIELL sein. Auskultation ist das fundamentalste klinische Zeichen einer Pneumonie.",
+   src:"S3-Leitlinie CAP: Klinische Untersuchung ist Grundlage der Diagnose",ev:"A",
+   url:"https://www.awmf.org/leitlinien/detail/ll/020-020.html"},
+
+  {id:"07",name:"Röntgen-Thorax (PA/Lateral)",cat:"ESSENTIELL",area:"Röntgen-Viewer",
+   desc:"Die Röntgendiagnostik des Thorax nutzt ionisierende Strahlung, die von unterschiedlich dichten Geweben verschieden stark absorbiert wird, und erzeugt so Kontrastbilder von Lunge, Herz, Gefäßen und Knochen. Sie wird standardmäßig in zwei Ebenen durchgeführt und ermöglicht die Beurteilung von Lungenfeldern, Herzgröße sowie Rippenstruktur.",
+   ok:"✓ RICHTIG! Röntgen-Thorax ist der GOLDSTANDARD zur CAP-Diagnose. PA + Lateral zeigen Infiltrat-Lokalisation und Schweregrad. Obligat!",
+   err:"✗ Das sollte ESSENTIELL sein. Röntgen ist der Goldstandard zur Diagnosebestätigung einer CAP.",
+   src:"S3-Leitlinie CAP – Bildgebung: PA + Lateral obligat",ev:"A",
+   url:"https://www.awmf.org/leitlinien/detail/ll/020-020.html"},
+
+  {id:"08",name:"Blutkultur",cat:"ESSENTIELL",area:"Blutentnahme-Ständer",
+   desc:"Blutkulturen werden durch sterile Blutentnahme in spezielle Nährmedien gewonnen und über mehrere Tage bebrütet, um Bakterien oder Pilze im Blut zu identifizieren. Das Verfahren wird eingesetzt, wenn ein systemischer Infektionsherd vermutet wird, und ermöglicht eine gezielte Resistenztestung.",
+   ok:"✓ RICHTIG! Blutkultur ist essentiell und MUSS vor Antibiose abgenommen werden. Bei Hr. Hermann mit Amo-Clav-Versagen ist sie zur Erreger-ID und Resistenztestung essentiell.",
+   err:"✗ Das sollte ESSENTIELL sein. Blutkultur ist Goldstandard zum Erregernachweis und muss VOR Antibiotika abgenommen werden.",
+   src:"S3-Leitlinie CAP: Blutkultur vor Antibiose obligat bei stationärer Aufnahme",ev:"A",
+   url:"https://www.awmf.org/leitlinien/detail/ll/020-020.html"},
+
+  {id:"09",name:"Blutbild (EDTA-Röhrchen)",cat:"SINNVOLL",area:"Tisch (Laborröhrchen)",
+   desc:"Das Blutbild bestimmt die zellulären Bestandteile des Blutes – Erythrozyten, Leukozyten und Thrombozyten – sowie Parameter wie Hämoglobin und Hämatokrit. Es gehört zur Basisdiagnostik und gibt Hinweise auf Anämie, Entzündungsreaktionen, Gerinnungsstörungen und hämatologische Erkrankungen.",
+   ok:"Blutbild ist Routine bei CAP. Leukozytose ist Zeichen der Infektion. Thrombozyten sind prognostisch (Thrombozytopenie = schlechtere Prognose).",
+   err:"Blutbild ist Routine bei CAP. Leukozytose ist Zeichen der Infektion. Thrombozyten sind prognostisch (Thrombozytopenie = schlechtere Prognose).",
+   src:"S3-Leitlinie CAP: Blutbild ist Routine-Laboruntersuchung",ev:"A",
+   url:"https://www.awmf.org/leitlinien/detail/ll/020-020.html"},
+
+  {id:"10",name:"CRP (C-reaktives Protein)",cat:"SINNVOLL",area:"Monitor/Labor-Anzeige",
+   desc:"Das C-reaktive Protein ist ein Akute-Phase-Protein der Leber, dessen Serumkonzentration innerhalb von Stunden nach einem Gewebeschaden oder einer Infektion ansteigt. Es wird als unspezifischer Entzündungsmarker zur Verlaufsbeurteilung und Therapiekontrolle eingesetzt.",
+   ok:"CRP ist Standarduntersuchung bei febrilen Temperaturen. Erwartet: deutlich erhöht (>50 mg/l). Nicht diagnostisch, aber wichtiger Entzündungsmarker.",
+   err:"CRP ist Standarduntersuchung bei febrilen Temperaturen. Erwartet: deutlich erhöht (>50 mg/l). Nicht diagnostisch, aber wichtiger Entzündungsmarker.",
+   src:"DNQP-Expertenstandard: CRP als Entzündungsmarker",ev:"A",
+   url:"https://www.dnqp.de/expertenstandards-und-auditinstrumente/"},
+
+  {id:"11",name:"Procalcitonin (PCT)",cat:"SINNVOLL",area:"Monitor/Labor-Anzeige",
+   desc:"Procalcitonin ist eine Vorstufe des Hormons Calcitonin, die bei schweren Infektionen von verschiedenen Körperzellen ausgeschüttet wird und im Blut messbar ansteigt. Es wird als Biomarker zur Differenzierung infektiöser Ursachen sowie zur Beurteilung des Schweregrades systemischer Entzündungsreaktionen herangezogen.",
+   ok:"Procalcitonin hilft bei viral/bakteriell-Differenzierung. Hr. Hermann mit grünlichem Sputum: PCT wahrscheinlich >0,5 ng/ml (bakteriell).",
+   err:"Procalcitonin hilft bei viral/bakteriell-Differenzierung. Hr. Hermann mit grünlichem Sputum: PCT wahrscheinlich >0,5 ng/ml (bakteriell).",
+   src:"S3-Leitlinie CAP: PCT kann bei Differenzierung und Therapiedauer helfen",ev:"B",
+   url:"https://www.awmf.org/leitlinien/detail/ll/020-020.html"},
+
+  {id:"12",name:"Blutgasanalyse (BGA)",cat:"SINNVOLL",area:"Monitor/Labor-Anzeige",
+   desc:"Die Blutgasanalyse bestimmt aus einer arteriellen oder kapillären Blutprobe die Partialdrücke von Sauerstoff und Kohlendioxid sowie pH-Wert, Bikarbonat und Basenüberschuss. Sie erlaubt eine differenzierte Beurteilung des Säure-Basen-Haushalts und der respiratorischen Funktion.",
+   ok:"BGA ist bei Dyspnoe wichtig. Zeigt: PaO₂ (<60 mmHg = schwer), Hyperkapnie (>45 = Dekompensation), Säure-Basen-Status.",
+   err:"BGA ist bei Dyspnoe wichtig. Zeigt: PaO₂ (<60 mmHg = schwer), Hyperkapnie (>45 = Dekompensation), Säure-Basen-Status.",
+   src:"S3-Leitlinie CAP: BGA bei Hypoxämie und Dyspnoe indiziert",ev:"A",
+   url:"https://www.awmf.org/leitlinien/detail/ll/020-020.html"},
+
+  {id:"13",name:"Sputum-Kultur + E+R",cat:"SINNVOLL",area:"Tisch (Laborbereich)",
+   desc:"Die Sputumkultur untersucht tief abgehustetes Bronchialsekret mikrobiologisch auf Krankheitserreger und deren Antibiotikaresistenz. Sie wird eingesetzt, wenn ein Infekt der unteren Atemwege vermutet wird und eine gezielte Erregerzuordnung angestrebt wird.",
+   ok:"Sputum E+R ist wertvoll bei Hr. Hermann mit dokumentiertem Amo-Clav-Versagen. Grünliches Sputum zeigt Pseudomonas/Haemophilus; E+R optimiert Antibiose.",
+   err:"Sputum E+R ist wertvoll bei Hr. Hermann mit dokumentiertem Amo-Clav-Versagen. Grünliches Sputum zeigt Pseudomonas/Haemophilus; E+R optimiert Antibiose.",
+   src:"RKI: Sputum-Kultur bei schwerer CAP / Therapieversagen empfohlen",ev:"B",
+   url:"https://www.rki.de/DE/Themen/Infektionskrankheiten/Infektionskrankheiten-A-Z/P/Pneumokokkeninfektion/pneumokokken-node.html"},
+
+  {id:"14",name:"Urin-Antigen-Test",cat:"SINNVOLL",area:"Tisch (Labor)",
+   desc:"Der Urin-Antigen-Test weist spezifische bakterielle Oberflächenproteine im Urin nach und liefert innerhalb weniger Minuten ein Ergebnis. Er wird als Schnelldiagnostik bei bestimmten Erregerverdachten eingesetzt, wenn eine rasche Therapieentscheidung erforderlich ist.",
+   ok:"Urin-Antigen-Schnelltests sind hochwertig für DD. Positiv auf Legionella? → Andere Antibiose nötig (Fluorochinolone, nicht β-Lactam)! RKI empfiehlt bei hospitalisierten CAP.",
+   err:"Urin-Antigen-Schnelltests sind hochwertig für DD. Positiv auf Legionella? → Andere Antibiose nötig (Fluorochinolone, nicht β-Lactam)! RKI empfiehlt bei hospitalisierten CAP.",
+   src:"RKI: Antigen-Schnelltests sollten bei hospitalisierten CAP durchgeführt werden",ev:"A",
+   url:"https://www.rki.de/DE/Aktuelles/Publikationen/RKI-Ratgeber/Ratgeber/Ratgeber_Legionellose.html"},
+
+  {id:"15",name:"CT-Thorax",cat:"ABLENKUNG",area:"Hintergrund (Maschine)",
+   desc:"Die Computertomographie des Thorax erzeugt durch viele Röntgenaufnahmen aus unterschiedlichen Winkeln hochauflösende Querschnittsbilder des Brustkorbs und ermöglicht die detaillierte Beurteilung von Lungenparenchym, Gefäßen, Lymphknoten und Weichteilen. Sie wird bei komplexen Fragestellungen eingesetzt, wenn konventionelle Bildgebung keine ausreichende Aussage liefert.",
+   ok:"✓ RICHTIG! CT ist zu diesem Zeitpunkt NICHT indiziert. Röntgen reicht zur Diagnose. CT nur bei: Therapieversagen nach 7 Tagen, Verdacht auf Abszess/Empyem.",
+   err:"✗ CT ist NICHT indiziert! Massive Überdiagnostik. 100× mehr Strahlung, höhere Kosten, keine Zusatzinformation für Initialtherapie. Röntgen ist ausreichend!",
+   src:"S3-Leitlinie CAP: CT nicht zur Erstdiagnose empfohlen",ev:"B",
+   url:"https://www.awmf.org/leitlinien/detail/ll/020-020.html"},
+
+  {id:"16",name:"Spirometrie",cat:"ABLENKUNG",area:"Geräte-Bereich (Rechts)",
+   desc:"Die Spirometrie misst Atemvolumina und Strömungsgeschwindigkeiten beim forcierten Ein- und Ausatmen und erlaubt so eine objektive Beurteilung der Lungenfunktion. Sie wird zur Diagnose und Verlaufskontrolle von Erkrankungen wie COPD oder Asthma bronchiale eingesetzt.",
+   ok:"✓ RICHTIG! Spirometrie misst Lungenfunktion (obstruktiv/restriktiv), nicht Infektion. Akuter Patient ist belastet → Spirometrie unmöglich.",
+   err:"✗ Spirometrie ist NICHT indiziert in der Akutphase! Keine Rolle bei Pneumonie-Diagnostik. Nur nach Genesung relevant (COPD-Screening).",
+   src:"Keine Leitlinie empfiehlt Spirometrie für CAP-Initialdiagnostik",ev:"—",
+   url:null},
+
+  {id:"17",name:"Perkussionshammer",cat:"ABLENKUNG",area:"Tisch",
+   desc:"Der Reflexhammer wird in der neurologischen Untersuchung eingesetzt, um durch gezielten Schlag auf Sehnen die Eigenreflexe auszulösen und so die Integrität von Reflexbögen, Rückenmark und peripheren Nerven zu beurteilen. Er gehört zur Standardausstattung der körperlichen Untersuchung.",
+   ok:"✓ OPTIONAL/ABLENKUNG! Perkussion ist keine Priorität. Klassisch für Konsolidierungen, aber Röntgen ist sensitiver. Kann durchgeführt werden, ist aber veraltet.",
+   err:"⚠️ OPTIONAL! Perkussion ist möglich, aber nicht die erste Wahl. Röntgen ist aussagekräftiger.",
+   src:"S3-Leitlinie CAP: Auskultation wird bevorzugt über Perkussion",ev:"C",
+   url:"https://www.awmf.org/leitlinien/detail/ll/020-020.html"},
+
+  {id:"18",name:"EKG-Gerät",cat:"ABLENKUNG",area:"Rollwagen (Rechts-Unten)",
+   desc:"Das Elektrokardiogramm erfasst die elektrische Herzaktivität über Hautelektroden und stellt Erregungsbildung, -ausbreitung und -rückbildung graphisch dar. Es wird standardmäßig bei Verdacht auf kardiale Erkrankungen wie Herzrhythmusstörungen, Myokardinfarkt oder Reizleitungsstörungen eingesetzt.",
+   ok:"✓ RICHTIG! EKG ist zu diesem Zeitpunkt NICHT indiziert. Keine Brustschmerzen, keine dokumentierten Herzprobleme. Nur bei Sepsis-Komplikation relevant.",
+   err:"✗ EKG ist NICHT indiziert bei reiner Pneumonie-Diagnostik! Nur wenn: Myokardinfarkt-Verdacht oder Sepsis mit Tachykardie/Arrhythmie.",
+   src:"EKG ist nicht Teil der CAP-Routinediagnostik",ev:"—",
+   url:"https://www.awmf.org/leitlinien/detail/ll/020-020.html"},
+
+  {id:"19",name:"TTE (Echokardiographie)",cat:"ABLENKUNG",area:"Geräte-Bereich",
+   desc:"Die transthorakale Echokardiographie erzeugt mittels Ultraschall Echtzeit-Schnittbilder des Herzens durch die Brustwand und ermöglicht die Beurteilung von Herzstruktur, Klappenfunktion und Kontraktilität. Sie wird bei Verdacht auf Herzerkrankungen wie Klappenvitien, Perikarderguss oder eingeschränkter Pumpfunktion eingesetzt.",
+   ok:"✓ RICHTIG! TTE ist nicht indiziert bei reiner Pneumonie. Nur wenn: Verdacht auf Endokarditis (Herzgeräusche), Myokarditis oder Perikarderguss.",
+   err:"✗ TTE ist NICHT indiziert! Nur relevant bei Verdacht auf Herzkomplikationen, nicht für CAP-Diagnostik.",
+   src:"TTE ist nicht Teil der CAP-Routinediagnostik",ev:"—",
+   url:"https://www.awmf.org/leitlinien/detail/ll/020-020.html"},
+
+  {id:"20",name:"TEE (Transösophageal)",cat:"ABLENKUNG",area:"Geräte-Bereich",
+   desc:"Bei der transösophagealen Echokardiographie wird eine Ultraschallsonde über die Speiseröhre in Herznähe eingeführt und liefert durch die räumliche Nähe besonders hochauflösende Herzbilder. Sie wird eingesetzt, wenn die transthorakale Untersuchung nicht ausreichend ist oder herznahe Strukturen wie Herzklappen besonders präzise beurteilt werden müssen.",
+   ok:"✓ RICHTIG! TEE ist semi-invasiv mit Risiken (Ösophagus-Perforation!) und völlig unnötig für Pneumonie-Diagnostik.",
+   err:"✗ TEE ist NICHT indiziert! Semi-invasiv mit Komplikationsrisiko. Selbst bei Endokarditis nur wenn TTE unklar.",
+   src:"TEE ist nicht indiziert bei CAP",ev:"—",
+   url:"https://www.awmf.org/leitlinien/detail/ll/020-020.html"},
+
+  {id:"21",name:"Hautabstrich-Set",cat:"ABLENKUNG",area:"Tisch",
+   desc:"Ein Hautabstrich entnimmt mittels Tupfer Zellen oder Sekret von der Hautoberfläche oder aus Wunden zur mikrobiologischen oder zytologischen Untersuchung. Er dient der Erregeridentifikation bei Hautinfektionen, Wundheilungsstörungen oder dem Nachweis von Kolonisierungen mit resistenten Keimen.",
+   ok:"✓ RICHTIG! Hautabstrich ist bei respiratorischer Infektion ohne Hautmanifestation irrelevant. Nur relevant bei dokumentierter Hautinfektion.",
+   err:"✗ Hautabstrich ist NICHT indiziert! Hr. Hermann hat keine Hautläsionen. Nur bei Wundinfektionen oder Hautmanifestationen relevant.",
+   src:"Hautkultur hat keine Rolle bei CAP",ev:"—",
+   url:null},
+
+  {id:"22",name:"Stuhlprobe-Behälter",cat:"ABLENKUNG",area:"Tisch",
+   desc:"Die Stuhlprobe wird mikrobiologisch auf Krankheitserreger wie Bakterien, Viren oder Parasiten untersucht und dient der Abklärung von Magen-Darm-Erkrankungen oder Verdauungsstörungen. Sie kommt auch beim Nachweis von Kolonisierungen mit multiresistenten Erregern zum Einsatz.",
+   ok:"✓ RICHTIG! Stuhlprobe ist nicht indiziert bei respiratorischer Infektion ohne Diarrhoe. Nur relevant bei Gastroenteritis-Verdacht.",
+   err:"✗ Stuhlprobe ist NICHT indiziert! Hr. Hermann hat respiratorische Symptome, keine GI-Symptome dokumentiert.",
+   src:"Stuhlkultur hat keine Rolle bei CAP",ev:"—",
+   url:"https://www.awmf.org/leitlinien/detail/ll/020-020.html"},
+
+  {id:"23",name:"MRT-Thorax",cat:"ABLENKUNG",area:"Hintergrund (Maschine)",
+   desc:"Die Magnetresonanztomographie erzeugt durch starke Magnetfelder und Radiowellen hochauflösende Schnittbilder von Weichteilen, Organen und Gefäßen ohne ionisierende Strahlung. Sie wird bevorzugt bei neurologischen, muskuloskelettalen und abdominellen Fragestellungen eingesetzt, bei denen eine hohe Gewebedifferenzierung erforderlich ist.",
+   ok:"✓ RICHTIG! MRT ist MASSIVER OVERUSE bei Pneumonie. Ungeeignet für Lunge, extrem teuer, keine Zusatzinfo. Röntgen reicht.",
+   err:"✗ MRT ist absolut NICHT indiziert! Massive Überdiagnostik. Teuer, zeitaufwändig, technisch ungeeignet für Pneumonie. Röntgen ist Goldstandard!",
+   src:"Keine Leitlinie empfiehlt MRT für CAP-Diagnostik",ev:"—",
+   url:"https://www.awmf.org/leitlinien/detail/ll/020-020.html"},
+
+  {id:"24",name:"Tee + Tasse",cat:"ABLENKUNG",area:"Tisch",
+   desc:"Tee ist ein wärmendes Getränk aus aufgebrühten Pflanzenstoffen und wird in der Pflege zur oralen Flüssigkeitszufuhr, zur Förderung des Wohlbefindens und bei bestimmten Beschwerden wie Husten oder Halsschmerzen eingesetzt.",
+   ok:"✓ RICHTIG, das ist eine Humor-Ablenkung! 😊 Tee ist gut für den Patienten, aber kein diagnostisches Instrument. Pflegezubehör statt Diagnostik.",
+   err:"✗ Tee ist kein diagnostisches Instrument! Humor-Falle erfolgreich. ☕",
+   src:"Pflegezubehör – keine Diagnostik",ev:"—",
+   url:null},
+
+  {id:"25",name:"Tempo-Taschentücher",cat:"ABLENKUNG",area:"Tisch",
+   desc:"Papiertaschentücher dienen der hygienischen Aufnahme von Nasensekret, Sputum oder anderen Körperflüssigkeiten und sind in der Krankenversorgung ein wichtiges Mittel zur Husten- und Nies-Etikette. Sie sind Einmalartikel und tragen zur Reduktion der Tröpfchenübertragung bei.",
+   ok:"✓ RICHTIG, das ist eine Humor-Ablenkung! 😊 Tempo-Taschentücher sind Pflegezubehör, nicht Diagnostik. Wichtig für Patientenkomfort, aber nicht für Diagnose.",
+   err:"✗ Tempo ist kein diagnostisches Instrument! Humor-Falle erfolgreich. Aber: Wichtig für Hygienemanagement (Husten abdecken)! 🧻",
+   src:"Pflegezubehör/Hygiene – keine Diagnostik",ev:"—",
+   url:null}
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+const S = {
+  team:      '',
+  answers:   new Map(), // id → {userAnswer, result}
+  score:     0,
+  currentId: null
+};
+
+// ── SCREENS ───────────────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ── SETUP ─────────────────────────────────────────────────────────────────────
+function startGame() {
+  const inp = document.getElementById('team-input');
+  const name = inp.value.trim();
+  if (!name) {
+    inp.classList.add('error');
+    inp.focus();
+    setTimeout(() => inp.classList.remove('error'), 1500);
+    return;
+  }
+  S.team = name;
+  document.getElementById('team-display').textContent = name;
+  showScreen('game-screen');
+}
+
+// ── HOTSPOTS ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('#hotspot-svg .hotspot').forEach(circle => {
+    circle.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = circle.getAttribute('data-id');
+      if (!S.answers.has(id)) openModal(id);
+    });
+  });
+});
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function openModal(id) {
+  const instr = INSTRUMENTS.find(i => i.id === id);
+  if (!instr) return;
+  S.currentId = id;
+
+  document.getElementById('m-area').textContent = instr.area;
+  document.getElementById('m-name').textContent = instr.name;
+  document.getElementById('m-desc').textContent = instr.desc;
+  document.getElementById('m-btns').style.display = 'flex';
+
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback hidden';
+
+  document.getElementById('modal').classList.remove('hidden');
+  document.getElementById('backdrop').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.add('hidden');
+  document.getElementById('backdrop').classList.add('hidden');
+  S.currentId = null;
+}
+
+// ── ANSWER ────────────────────────────────────────────────────────────────────
+function submitAnswer(userAnswer) {
+  const id = S.currentId;
+  if (!id) return;
+  const instr = INSTRUMENTS.find(i => i.id === id);
+  if (!instr) return;
+
+  // Determine result
+  let result;
+  if (instr.cat === 'SINNVOLL') {
+    result = 'neutral';
+  } else if (
+    (userAnswer === 'ESSENTIELL'       && instr.cat === 'ESSENTIELL') ||
+    (userAnswer === 'NICHT_ESSENTIELL' && instr.cat === 'ABLENKUNG')
+  ) {
+    result = 'correct';
+  } else {
+    result = 'incorrect';
+  }
+
+  S.answers.set(id, { userAnswer, result });
+  if (result === 'correct') S.score += 10;
+
+  // Mark hotspot
+  const circle = document.querySelector(`#hotspot-svg [data-id="${id}"]`);
+  if (circle) {
+    circle.classList.add('answered', 'answered-' + result);
+  }
+
+  showFeedback(instr, result);
+  updateProgress();
+}
+
+function showFeedback(instr, result) {
+  document.getElementById('m-btns').style.display = 'none';
+
+  const fb   = document.getElementById('feedback');
+  const head = document.getElementById('fb-head');
+  const txt  = document.getElementById('fb-text');
+  const src  = document.getElementById('fb-src');
+
+  fb.className = 'feedback ' + result;
+
+  if (result === 'neutral') {
+    head.textContent = '⚡ Sinnvoll – nicht zwingend essentiell';
+    txt.textContent  = instr.ok;
+  } else if (result === 'correct') {
+    head.textContent = instr.cat === 'ABLENKUNG' ? '✓ Ablenkung erkannt!' : '✓ Richtig!';
+    txt.textContent  = instr.ok;
+  } else {
+    head.textContent = '✗ Nicht ganz richtig';
+    txt.textContent  = instr.err;
+  }
+
+  if (instr.url) {
+    src.innerHTML = `Quelle: <a href="${instr.url}" target="_blank" rel="noopener noreferrer">${instr.src}</a>&nbsp;|&nbsp;Evidenz: ${instr.ev}`;
+  } else {
+    src.textContent = `Quelle: ${instr.src}  |  Evidenz: ${instr.ev}`;
+  }
+  fb.classList.remove('hidden');
+}
+
+// ── PROGRESS ──────────────────────────────────────────────────────────────────
+function updateProgress() {
+  const n = S.answers.size;
+  document.getElementById('progress-fill').style.width = (n / 25 * 100) + '%';
+  document.getElementById('progress-text').textContent = `${n} / 25 bewertet`;
+}
+
+// ── EVALUATION ────────────────────────────────────────────────────────────────
+function leaveRoom() {
+  closeModal();
+  buildEval();
+  showScreen('eval-screen');
+}
+
+function buildEval() {
+  const vals     = [...S.answers.values()];
+  const correct  = vals.filter(a => a.result === 'correct').length;
+  const incorrect = vals.filter(a => a.result === 'incorrect').length;
+  const neutral  = vals.filter(a => a.result === 'neutral').length;
+  const skipped  = 25 - S.answers.size;
+  const pct      = Math.round(S.score / 190 * 100);
+
+  document.getElementById('eval-team').textContent = S.team;
+  document.getElementById('score-val').textContent = S.score;
+  document.getElementById('score-pct').textContent = pct + ' %';
+  setTimeout(() => {
+    document.getElementById('score-bar').style.width = pct + '%';
+  }, 80);
+
+  document.getElementById('summary').innerHTML =
+    `Bewertet: <strong>${S.answers.size}/25</strong> &nbsp;·&nbsp; ` +
+    `Richtig: <strong>${correct}</strong> &nbsp;·&nbsp; ` +
+    `Falsch: <strong>${incorrect}</strong> &nbsp;·&nbsp; ` +
+    `Sinnvoll: <strong>${neutral}</strong> &nbsp;·&nbsp; ` +
+    `Übersprungen: <strong>${skipped}</strong>`;
+
+  const tbody = document.getElementById('res-body');
+  tbody.innerHTML = '';
+  INSTRUMENTS.forEach(instr => {
+    const ans = S.answers.get(instr.id);
+    const catClass = { ESSENTIELL:'b-ess', SINNVOLL:'b-sin', ABLENKUNG:'b-abl' }[instr.cat];
+
+    let ansText = '—';
+    let statusHtml = '<span class="s-skip">— Übersprungen</span>';
+
+    if (ans) {
+      ansText = ans.userAnswer === 'ESSENTIELL' ? '✅ Essentiell' : '✗ Nicht essentiell';
+      if (ans.result === 'correct')   statusHtml = '<span class="s-ok">✓ Richtig</span>';
+      if (ans.result === 'incorrect') statusHtml = '<span class="s-err">✗ Falsch</span>';
+      if (ans.result === 'neutral')   statusHtml = '<span class="s-neu">⚡ Sinnvoll</span>';
+    }
+
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      `<td>${instr.id}</td>` +
+      `<td><strong>${instr.name}</strong></td>` +
+      `<td><span class="badge ${catClass}">${instr.cat}</span></td>` +
+      `<td>${ansText}</td>` +
+      `<td>${statusHtml}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── RESET ─────────────────────────────────────────────────────────────────────
+function resetGame() {
+  S.team = '';
+  S.answers.clear();
+  S.score = 0;
+  S.currentId = null;
+
+  document.querySelectorAll('.hotspot').forEach(h => {
+    h.classList.remove('answered', 'answered-correct', 'answered-incorrect', 'answered-neutral');
+  });
+
+  document.getElementById('team-input').value = '';
+  document.getElementById('progress-fill').style.width = '0%';
+  document.getElementById('progress-text').textContent = '0 / 25 bewertet';
+  showScreen('setup-screen');
+}
+
+// ── IMPRESSUM ─────────────────────────────────────────────────────────────────
+function showImp() { document.getElementById('imp-overlay').classList.remove('hidden'); }
+function hideImp() { document.getElementById('imp-overlay').classList.add('hidden'); }
+
+function showVorgehen() {
+  const el = document.getElementById('vorgehen-overlay');
+  el.classList.remove('hidden');
+  el.scrollTop = 0;
+}
+function closeVorgehenBtn() {
+  document.getElementById('vorgehen-overlay').classList.add('hidden');
+}
+function closeVorgehen(e) {
+  if (e.target === document.getElementById('vorgehen-overlay')) closeVorgehenBtn();
+}
+</script>
+</body>
+</html>
