@@ -23,6 +23,7 @@
       --radius:       10px;
       --shadow:       0 2px 12px rgba(0,0,0,0.12);
       --tr:           all 0.22s ease;
+      --border:       #CFD8DC;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -670,34 +671,34 @@
     <!-- SVG Hotspot-Overlay — viewBox passt proportional zu 1200×896 (beide ~4:3) -->
     <svg id="hotspot-svg" viewBox="0 0 2560 1920" preserveAspectRatio="none"
          xmlns="http://www.w3.org/2000/svg">
-      <!-- ESSENTIELL (8) — img(x,y)→svg: x×2.133, y×2.143 -->
-      <circle class="hotspot essentiell" data-id="01" cx="629"  cy="875"  r="80"/>  <!-- Stethoskop: Arzt (mehr rechts) -->
-      <circle class="hotspot essentiell" data-id="02" cx="149"  cy="1061" r="70"/>  <!-- Blutdruckmanschette: Wagen Mitte -->
-      <circle class="hotspot essentiell" data-id="03" cx="203"  cy="1061" r="55"/>  <!-- Thermometer: neben Blutdruck -->
-      <circle class="hotspot essentiell" data-id="04" cx="102"  cy="740"  r="85"/>  <!-- Atemfrequenz-Monitor: linke Wand -->
-      <circle class="hotspot essentiell" data-id="05" cx="661"  cy="1261" r="65"/>  <!-- Pulsoxymeter: Tisch (Clip-Gerät) -->
-      <circle class="hotspot essentiell" data-id="06" cx="491"  cy="1003" r="95"/>  <!-- Auskultation: Patient Brust -->
-      <circle class="hotspot essentiell" data-id="07" cx="1642" cy="343"  r="110"/> <!-- Röntgen-Thorax: Rückwand-Screen -->
-      <circle class="hotspot essentiell" data-id="08" cx="917"  cy="632"  r="75"/>  <!-- Blutkultur: IV-Beutel -->
-      <!-- SINNVOLL (6) — alle Tisch-Items +107 SVG (≈+50px im Bild) nach rechts -->
-      <circle class="hotspot sinnvoll"   data-id="09" cx="1568" cy="1222" r="55"/>  <!-- Blutbild EDTA: Tisch -->
-      <circle class="hotspot sinnvoll"   data-id="10" cx="1835" cy="1168" r="60"/>  <!-- CRP: Tisch rechts -->
-      <circle class="hotspot sinnvoll"   data-id="11" cx="1920" cy="1168" r="60"/>  <!-- PCT: neben CRP -->
-      <circle class="hotspot sinnvoll"   data-id="12" cx="1995" cy="1161" r="60"/>  <!-- BGA: neben PCT -->
-      <circle class="hotspot sinnvoll"   data-id="13" cx="1654" cy="1243" r="55"/>  <!-- Sputum-Becher: Tisch -->
-      <circle class="hotspot sinnvoll"   data-id="14" cx="1728" cy="1239" r="55"/>  <!-- Urin-Antigen: Tisch -->
-      <!-- ABLENKUNG (11) -->
-      <circle class="hotspot ablenkung"  data-id="15" cx="2133" cy="622"  r="120"/> <!-- CT-Scanner: rechts Hintergrund -->
-      <circle class="hotspot ablenkung"  data-id="16" cx="1002" cy="1175" r="65"/>  <!-- Spirometer: Tisch (links) -->
-      <circle class="hotspot ablenkung"  data-id="17" cx="1175" cy="1200" r="50"/>  <!-- Perkussionshammer: Tisch -->
-      <circle class="hotspot ablenkung"  data-id="18" cx="2090" cy="1011" r="95"/>  <!-- EKG-Gerät: links vom Echo -->
-      <circle class="hotspot ablenkung"  data-id="19" cx="2250" cy="911"  r="80"/>  <!-- TTE-Echo: rechts Mitte -->
-      <circle class="hotspot ablenkung"  data-id="20" cx="2314" cy="836"  r="65"/>  <!-- TEE: Monitor oben rechts -->
-      <circle class="hotspot ablenkung"  data-id="21" cx="1835" cy="1275" r="55"/>  <!-- Hautabstrich: unter CRP -->
-      <circle class="hotspot ablenkung"  data-id="22" cx="1419" cy="1204" r="50"/>  <!-- Stuhlprobe: Tisch -->
-      <circle class="hotspot ablenkung"  data-id="23" cx="2272" cy="386"  r="125"/> <!-- MRT: oben rechts -->
-      <circle class="hotspot ablenkung"  data-id="24" cx="1297" cy="1078" r="65"/>  <!-- Tee+Tasse: Tisch -->
-      <circle class="hotspot ablenkung"  data-id="25" cx="1562" cy="947"  r="85"/>  <!-- Tempo-Taschentücher: Tisch -->
+      <!-- ESSENTIELL (8) -->
+      <circle class="hotspot essentiell" data-id="01" cx="629"  cy="875"  r="70"/>  <!-- Stethoskop: Arzt -->
+      <circle class="hotspot essentiell" data-id="02" cx="155"  cy="1050" r="55"/>  <!-- Blutdruckmanschette: Gerätewagen links -->
+      <circle class="hotspot essentiell" data-id="03" cx="215"  cy="1095" r="42"/>  <!-- Thermometer: Gerätewagen links, 1.5cm runter, 0.5cm links -->
+      <circle class="hotspot essentiell" data-id="04" cx="102"  cy="730"  r="70"/>  <!-- Atemfrequenz-Monitor: linke Wand -->
+      <circle class="hotspot essentiell" data-id="05" cx="661"  cy="1240" r="52"/>  <!-- Pulsoxymeter: Tisch links -->
+      <circle class="hotspot essentiell" data-id="06" cx="480"  cy="1000" r="78"/>  <!-- Auskultation: Patient Brust -->
+      <circle class="hotspot essentiell" data-id="07" cx="1642" cy="343"  r="92"/>  <!-- Röntgen-Thorax: Rückwand-Screen -->
+      <circle class="hotspot essentiell" data-id="08" cx="1720" cy="1005" r="50"/>  <!-- Blutkultur: zu Blutröhrchen auf Tisch -->
+      <!-- SINNVOLL (6) — Originalpositionen, kleinere Radien, PCT versetzt -->
+      <circle class="hotspot sinnvoll"   data-id="09" cx="1760" cy="1095" r="40"/>  <!-- Blutbild EDTA: Blutröhrchen Tisch -->
+      <circle class="hotspot sinnvoll"   data-id="10" cx="1835" cy="1140" r="42"/>  <!-- CRP: Tisch rechts -->
+      <circle class="hotspot sinnvoll"   data-id="11" cx="1935" cy="1200" r="42"/>  <!-- PCT: versetzt nach unten -->
+      <circle class="hotspot sinnvoll"   data-id="12" cx="1775" cy="1218" r="38"/>  <!-- BGA: zwischen Sputum und Hautabstrich -->
+      <circle class="hotspot sinnvoll"   data-id="13" cx="1715" cy="1170" r="40"/>  <!-- Sputum-Becher grün: bestätigte Position -->
+      <circle class="hotspot sinnvoll"   data-id="14" cx="1675" cy="1090" r="40"/>  <!-- Urin-Antigen: Tisch, links von Blutröhrchen -->
+      <!-- ABLENKUNG (11) — Originalpositionen, kleinere Radien -->
+      <circle class="hotspot ablenkung"  data-id="15" cx="2133" cy="600"  r="100"/> <!-- CT-Scanner: rechts Hintergrund -->
+      <circle class="hotspot ablenkung"  data-id="16" cx="1002" cy="1175" r="50"/>  <!-- Spirometer: Tisch links -->
+      <circle class="hotspot ablenkung"  data-id="17" cx="1175" cy="1170" r="42"/>  <!-- Perkussionshammer: Tisch -->
+      <circle class="hotspot ablenkung"  data-id="18" cx="2030" cy="830"  r="65"/>  <!-- EKG-Gerät: Gerätekörper, deutlich höher -->
+      <circle class="hotspot ablenkung"  data-id="19" cx="2258" cy="900"  r="62"/>  <!-- TTE-Echo: rechts Mitte -->
+      <circle class="hotspot ablenkung"  data-id="20" cx="2345" cy="820"  r="50"/>  <!-- TEE: Monitor oben rechts -->
+      <circle class="hotspot ablenkung"  data-id="21" cx="1835" cy="1265" r="42"/>  <!-- Hautabstrich: unter CRP -->
+      <circle class="hotspot ablenkung"  data-id="22" cx="1419" cy="1200" r="40"/>  <!-- Stuhlprobe: Tisch -->
+      <circle class="hotspot ablenkung"  data-id="23" cx="2272" cy="375"  r="100"/> <!-- MRT: oben rechts -->
+      <circle class="hotspot ablenkung"  data-id="24" cx="1297" cy="1078" r="50"/>  <!-- Tee+Tasse: Tisch Mitte -->
+      <circle class="hotspot ablenkung"  data-id="25" cx="1562" cy="947"  r="70"/>  <!-- Tempo-Taschentücher: Tisch -->
     </svg>
   </div>
 </div>
@@ -1168,6 +1169,9 @@ const INSTRUMENTS = [
    url:null}
 ];
 
+const TOTAL     = INSTRUMENTS.length;
+const MAX_SCORE = INSTRUMENTS.filter(i => i.cat !== 'SINNVOLL').length * 10;
+
 // ── STATE ─────────────────────────────────────────────────────────────────────
 const S = {
   team:      '',
@@ -1209,11 +1213,23 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (!document.getElementById('modal').classList.contains('hidden')) closeModal();
+  if (!document.getElementById('vorgehen-overlay').classList.contains('hidden')) closeVorgehenBtn();
+  if (!document.getElementById('imp-overlay').classList.contains('hidden')) hideImp();
+});
+
 // ── MODAL ─────────────────────────────────────────────────────────────────────
 function openModal(id) {
   const instr = INSTRUMENTS.find(i => i.id === id);
   if (!instr) return;
   S.currentId = id;
+
+  const card = document.querySelector('.modal-card');
+  card.style.animation = 'none';
+  void card.offsetWidth;
+  card.style.animation = '';
 
   document.getElementById('m-area').textContent = instr.area;
   document.getElementById('m-name').textContent = instr.name;
@@ -1298,8 +1314,8 @@ function showFeedback(instr, result) {
 // ── PROGRESS ──────────────────────────────────────────────────────────────────
 function updateProgress() {
   const n = S.answers.size;
-  document.getElementById('progress-fill').style.width = (n / 25 * 100) + '%';
-  document.getElementById('progress-text').textContent = `${n} / 25 bewertet`;
+  document.getElementById('progress-fill').style.width = (n / TOTAL * 100) + '%';
+  document.getElementById('progress-text').textContent = `${n} / ${TOTAL} bewertet`;
 }
 
 // ── EVALUATION ────────────────────────────────────────────────────────────────
@@ -1314,18 +1330,19 @@ function buildEval() {
   const correct  = vals.filter(a => a.result === 'correct').length;
   const incorrect = vals.filter(a => a.result === 'incorrect').length;
   const neutral  = vals.filter(a => a.result === 'neutral').length;
-  const skipped  = 25 - S.answers.size;
-  const pct      = Math.round(S.score / 190 * 100);
+  const skipped  = TOTAL - S.answers.size;
+  const pct      = Math.round(S.score / MAX_SCORE * 100);
 
   document.getElementById('eval-team').textContent = S.team;
   document.getElementById('score-val').textContent = S.score;
+  document.querySelector('.score-max').textContent = ` / ${MAX_SCORE} Punkte`;
   document.getElementById('score-pct').textContent = pct + ' %';
   setTimeout(() => {
     document.getElementById('score-bar').style.width = pct + '%';
   }, 80);
 
   document.getElementById('summary').innerHTML =
-    `Bewertet: <strong>${S.answers.size}/25</strong> &nbsp;·&nbsp; ` +
+    `Bewertet: <strong>${S.answers.size}/${TOTAL}</strong> &nbsp;·&nbsp; ` +
     `Richtig: <strong>${correct}</strong> &nbsp;·&nbsp; ` +
     `Falsch: <strong>${incorrect}</strong> &nbsp;·&nbsp; ` +
     `Sinnvoll: <strong>${neutral}</strong> &nbsp;·&nbsp; ` +
@@ -1371,7 +1388,7 @@ function resetGame() {
 
   document.getElementById('team-input').value = '';
   document.getElementById('progress-fill').style.width = '0%';
-  document.getElementById('progress-text').textContent = '0 / 25 bewertet';
+  document.getElementById('progress-text').textContent = `0 / ${TOTAL} bewertet`;
   showScreen('setup-screen');
 }
 
